@@ -1,13 +1,8 @@
-// api/index.js
 const express = require("express");
 const app = express();
-const serverless = require("serverless-http");
 
-app.get("/", (req, res) => {
-  res.send("<h1>Hello from Express deployed on Vercel!</h1>");
-});
+app.get("/", (req, res) => res.send("Express on Vercel"));
 
-// Add more routes here if needed
+// No app.listen()
 
 module.exports = app;
-module.exports.handler = serverless(app);
