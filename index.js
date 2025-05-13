@@ -110,8 +110,8 @@ app.use((req, res) => {
 
 // Start the server
 
-// app.listen(process.env.PORT, () => console.log(`Server running on port ${process.env.PORT}`));
+app.listen(process.env.PORT, () => console.log(`Server running on port ${process.env.PORT}`));
 
 // Optional for testing
-module.exports = app;
+// module.exports = app;
 
