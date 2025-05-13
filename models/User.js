@@ -6,4 +6,6 @@ const UserSchema = new mongoose.Schema({
   city: { type: String, required: true },
 });
 
+
+
 module.exports = mongoose.model('employees', UserSchema);

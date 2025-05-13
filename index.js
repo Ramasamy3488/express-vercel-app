@@ -1,3 +1,5 @@
+require('dotenv').config(); // Load environment variables from .env
+
 const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
@@ -5,31 +7,34 @@ const cors = require('cors');
 const User = require('./models/User');
 
 const app = express();
-app.use(cors());
 
+// Middleware
+app.use(cors());
 app.use(bodyParser.json());
 
 // Connect to MongoDB
-mongoose.connect('mongodb+srv://ramasamy:ramasamy123@trainees.cweud9i.mongodb.net/kumarDB', {
+mongoose.connect(process.env.MONGO_DB_URL, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
+})
+.then(() => console.log('MongoDB connected successfully'))
+.catch((err) => {
+  console.error('MongoDB connection error:', err.message);
+  process.exit(1); // Exit if DB connection fails
 });
 
 
-
-
-//  READ - Get all users
+// READ - Get all users
 app.get('/api/users/allusers', async (req, res) => {
   try {
     const users = await User.find();
     res.json(users);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
-//  READ - Get a user by Email
-
+// READ - Get a user by Email (POST)
 app.post('/api/users/getuser', async (req, res) => {
   try {
     const { email } = req.body;
@@ -40,21 +45,18 @@ app.post('/api/users/getuser', async (req, res) => {
 
     res.json(user);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
-
-
-//  CREATE - Add a new user
+// CREATE - Add a new user
 app.post('/api/users/adduser', async (req, res) => {
   try {
     const { email } = req.body;
 
-    // Check if user with the same email already exists
     const existingUser = await User.findOne({ email });
     if (existingUser) {
-      return res.status(409).json({ error: 'Email already exists' }); // 409 = Conflict
+      return res.status(409).json({ error: 'Email already exists' });
     }
 
     const user = new User(req.body);
@@ -65,13 +67,10 @@ app.post('/api/users/adduser', async (req, res) => {
   }
 });
 
-
-
-//  UPDATE - Update a user
+// UPDATE - Update a user
 app.put('/api/users/updateuser', async (req, res) => {
   try {
     const { email, ...updates } = req.body;
-
     if (!email) return res.status(400).json({ error: 'Email is required' });
 
     const updatedUser = await User.findOneAndUpdate(
@@ -88,27 +87,30 @@ app.put('/api/users/updateuser', async (req, res) => {
   }
 });
 
-
-//  DELETE - Delete a user
+// DELETE - Delete a user
 app.delete('/api/users/deleteuser', async (req, res) => {
   try {
     const { email } = req.body;
     if (!email) return res.status(400).json({ error: 'Email is required' });
 
     const deletedUser = await User.findOneAndDelete({ email });
-
     if (!deletedUser) return res.status(404).json({ error: 'User not found' });
 
     res.json({ message: 'User deleted successfully' });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
-// No app.listen()
+// Handle unmatched routes
+app.use((req, res) => {
+  res.status(404).json({ error: 'Route not found' });
+});
 
+// Start the server
 
+app.listen(process.env.PORT, () => console.log(`Server running on port ${process.env.PORT}`));
 
+// Optional for testing
+// module.exports = app;
 
-
-module.exports = app;
